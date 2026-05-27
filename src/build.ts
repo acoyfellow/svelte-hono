@@ -134,7 +134,20 @@ export async function buildHonoSvelte(
 // an import map.
 import "svelte/internal/disclose-version";
 export * from "svelte/internal/client";
+// Re-export the entire svelte user-API surface so component bundles can
+// import any of: onMount, onDestroy, tick, getContext, setContext, untrack,
+// flushSync, etc. The previous "only hydrate/mount/unmount" subset broke
+// any component that used lifecycle helpers.
+//
+// Named re-exports for hydrate/mount/unmount come first so the
+// per-component shim's 'import { hydrate as _hydrate } from svelte' always
+// resolves. The duplicate mount/hydrate/unmount between 'svelte' and
+// 'svelte/internal/client' would otherwise shadow them via the ES module
+// ambiguity rule: 'export * from A; export * from B' with overlapping
+// names makes those names inaccessible via the star. Explicit named
+// re-exports win.
 export { hydrate, mount, unmount } from "svelte";
+export * from "svelte";
 `,
   );
   const runtimeOutfile = join(outDir, "client-_runtime.js");

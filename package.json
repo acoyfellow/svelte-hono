@@ -1,6 +1,6 @@
 {
   "name": "svelte-hono",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "description": "Svelte 5 SSR + hydration inside a Hono Worker. No SvelteKit.",
   "main": "./dist/index.js",
