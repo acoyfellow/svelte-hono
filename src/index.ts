@@ -66,6 +66,17 @@ export interface ClientBundle {
   js: string;
   /** Scoped CSS extracted from the component. Empty string if none. */
   css: string;
+  /**
+   * Short content hash (e.g. 8 hex chars) of `js + css`. Emitted by
+   * `svelte-hono/build`. When present, the served URL becomes
+   * `/{prefix}/{id}.{hash}.js` so a new deploy produces a new URL — the
+   * previous URL never collides with the new bytes. This is what makes
+   * `cache-control: immutable` on the JS/CSS safe.
+   *
+   * Backwards compatible: if `hash` is missing, the URL is `/{prefix}/{id}.js`
+   * and the response sets a short, revalidating Cache-Control instead.
+   */
+  hash?: string;
 }
 
 export interface AttachSvelteRoutesOptions {
@@ -79,6 +90,13 @@ const TAG = "__hono_svelte_mounted__";
 
 let registeredBundles: Record<string, ClientBundle> = {};
 let mountPrefix = "/__svelte";
+
+/** Resolve the public asset filename (without extension) for a bundle id. */
+function assetBaseFor(id: string): string {
+  const b = registeredBundles[id];
+  if (b && b.hash) return `${id}.${b.hash}`;
+  return id;
+}
 
 /**
  * Register the routes that serve compiled Svelte artifacts.
@@ -98,34 +116,63 @@ export function attachSvelteRoutes(
   tagged[TAG] = true;
 
   app.get(`${mountPrefix}/:filename`, async (c) => {
-    // Edge cache: client bundles and scoped CSS are immutable per build.
-    // First request in a PoP runs this handler; every subsequent request
-    // in the same PoP is served by Cloudflare's edge cache without
-    // touching the Worker.
-    const cache = (globalThis as unknown as { caches?: { default: Cache } }).caches?.default;
+    const filename = c.req.param("filename");
+    // Two URL shapes are accepted:
+    //   {id}.{hash}.{js|css}  — content-addressed, safe to cache forever.
+    //   {id}.{js|css}         — legacy/no-hash, MUST NOT be cached forever.
+    //
+    // Anything else is a 404. Note the hash segment is hex-ish; we accept
+    // any 6+ alphanumeric token so users can plug in their own hashing.
+    const hashed = filename.match(/^([a-zA-Z0-9_\-]+)\.([a-zA-Z0-9]{6,})\.(js|css)$/);
+    const plain = hashed ? null : filename.match(/^([a-zA-Z0-9_\-]+)\.(js|css)$/);
+    if (!hashed && !plain) return c.notFound();
+
+    const id = hashed ? hashed[1] : plain![1];
+    const requestedHash = hashed ? hashed[2] : null;
+    const ext = hashed ? hashed[3] : plain![2];
+
+    const bundle = registeredBundles[id];
+    if (!bundle) return c.notFound();
+
+    // If the URL claims a hash, it must match the bundle's current hash.
+    // Otherwise a stale HTML page (somehow) referencing an old hash would
+    // be served fresh bytes under the wrong URL — return 404 instead so
+    // the browser surfaces the problem instead of silently misloading.
+    if (requestedHash && bundle.hash && requestedHash !== bundle.hash) {
+      return c.notFound();
+    }
+
+    // Cache strategy:
+    //   - Hashed URLs: immutable. Safe because URL changes on every deploy.
+    //     We also write into caches.default so subsequent requests skip the
+    //     Worker entirely.
+    //   - Plain URLs (no hash available): short max-age + must-revalidate.
+    //     We do NOT write to caches.default — a deploy must be able to
+    //     replace these bytes within seconds.
+    const immutable = Boolean(requestedHash && bundle.hash);
+    const cacheControl = immutable
+      ? "public, max-age=31536000, immutable"
+      : "public, max-age=0, must-revalidate";
+
+    const cache = immutable
+      ? (globalThis as unknown as { caches?: { default: Cache } }).caches?.default
+      : undefined;
     if (cache) {
       const hit = await cache.match(c.req.raw);
       if (hit) return hit;
     }
 
-    const filename = c.req.param("filename");
-    const m = filename.match(/^([a-zA-Z0-9_\-]+)\.(js|css)$/);
-    if (!m) return c.notFound();
-    const [, id, ext] = m;
-    const bundle = registeredBundles[id];
-    if (!bundle) return c.notFound();
-
     const response = ext === "js"
       ? new Response(bundle.js, {
           headers: {
             "content-type": "application/javascript; charset=utf-8",
-            "cache-control": "public, max-age=31536000, immutable",
+            "cache-control": cacheControl,
           },
         })
       : new Response(bundle.css, {
           headers: {
             "content-type": "text/css; charset=utf-8",
-            "cache-control": "public, max-age=31536000, immutable",
+            "cache-control": cacheControl,
           },
         });
 
@@ -140,17 +187,57 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+/** Reserved bundle id for the shared Svelte runtime. */
+const RUNTIME_ID = "_runtime";
+
+function runtimeUrl(): string | null {
+  const r = registeredBundles[RUNTIME_ID];
+  if (!r) return null;
+  const base = r.hash ? `${RUNTIME_ID}.${r.hash}` : RUNTIME_ID;
+  return `${mountPrefix}/${base}.js`;
+}
+
 function shell(
   rendered: { body: string; head: string },
   bundleId: string,
   hasCss: boolean,
   opts: SvelteRendererOptions,
 ): string {
-  const cssLink = hasCss ? `<link rel="stylesheet" href="${mountPrefix}/${bundleId}.css">` : "";
+  // Hashed URLs guarantee browsers fetch fresh bytes on every deploy while
+  // still letting Cloudflare and the browser cache them forever between
+  // deploys. The hash is resolved at render time from the registry — so
+  // the worker can be re-deployed without rebuilding the HTML manually.
+  const base = assetBaseFor(bundleId);
+  const cssLink = hasCss ? `<link rel="stylesheet" href="${mountPrefix}/${base}.css">` : "";
   const title = opts.title ? `<title>${escapeHtml(opts.title)}</title>` : "";
   const extraHead = opts.head ?? "";
   const bodyClass = opts.bodyClass ? ` class="${escapeHtml(opts.bodyClass)}"` : "";
   const propsJson = JSON.stringify(opts.props ?? {});
+
+  // Shared-runtime path:
+  //   - The build emits a single _runtime bundle containing svelte's client
+  //     runtime + disclose-version side-effect + the user-facing `svelte`
+  //     exports (hydrate, mount, unmount).
+  //   - Per-component bundles are built with those modules `external`, so
+  //     they're ~1-3 KB each instead of ~45 KB.
+  //   - An import map in this shell points the bare specifiers the component
+  //     bundles still mention (`svelte`, `svelte/internal/client`, etc.) at
+  //     the runtime URL.
+  //   - A modulepreload hint primes the runtime fetch in parallel with the
+  //     component fetch, so hydration starts as soon as the page parses.
+  //
+  // If the build didn't emit a runtime entry (legacy / opted-out), fall back
+  // to the old self-contained per-component shape: no import map, the bundle
+  // ships its own runtime.
+  const runtime = runtimeUrl();
+  const importMap = runtime ? `<script type="importmap">${JSON.stringify({
+    imports: {
+      "svelte": runtime,
+      "svelte/internal/client": runtime,
+      "svelte/internal/disclose-version": runtime,
+    },
+  })}</script>` : "";
+  const runtimePreload = runtime ? `<link rel="modulepreload" href="${runtime}">` : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -158,6 +245,8 @@ function shell(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 ${title}
+${importMap}
+${runtimePreload}
 ${cssLink}
 ${extraHead}
 ${rendered.head}
@@ -165,7 +254,7 @@ ${rendered.head}
 <body${bodyClass}>
 <div id="svelte-hono-root">${rendered.body}</div>
 <script type="module">
-import { hydrate } from "${mountPrefix}/${bundleId}.js";
+import { hydrate } from "${mountPrefix}/${base}.js";
 hydrate(${propsJson});
 </script>
 </body>

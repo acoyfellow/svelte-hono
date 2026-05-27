@@ -32,7 +32,8 @@
       <li><strong>SSR first paint.</strong> The HTML is real, server-rendered Svelte. No blank flash.</li>
       <li><strong>Hydration after.</strong> Click handlers, <code>$state</code>, <code>$effect</code> all work.</li>
       <li><strong>One build step.</strong> <code>buildHonoSvelte()</code> handles both passes.</li>
-      <li><strong>Deploy-safe by default.</strong> HTML revalidates every request — new deploys visible everywhere instantly. Static bundles ship as immutable per build and cache for a year on Cloudflare's edge.</li>
+      <li><strong>Shared runtime.</strong> Svelte's ~103 KB client runtime ships once across every component on your site. Per-component bundles are 1–16 KB, not 45–70 KB. Linear scaling stops being a tax.</li>
+      <li><strong>Deploy-safe by default.</strong> HTML revalidates every request — new deploys visible everywhere instantly. Static bundles ship as content-hashed and immutable.</li>
       <li><strong>Cloudflare Workers native.</strong> No <code>eval</code>, no <code>new Function</code>, no codegen.</li>
       <li><strong>~5 KB library</strong> + your component bundle.</li>
     </ul>
