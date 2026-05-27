@@ -12,12 +12,12 @@ import Why from "./Why.svelte";
 // @ts-expect-error
 import Examples from "./Examples.svelte";
 
-declare const __HONO_SVELTE_BUNDLES__: Record<string, { js: string; css: string }>;
+declare const __SVELTE_HONO_BUNDLES__: Record<string, { js: string; css: string }>;
 
 const app = new Hono();
-attachSvelteRoutes(app, { bundles: __HONO_SVELTE_BUNDLES__ });
+attachSvelteRoutes(app, { bundles: __SVELTE_HONO_BUNDLES__ });
 
-const SITE = "hono-svelte — Svelte 5 on Hono Workers";
+const SITE = "svelte-hono — Svelte 5 on Hono Workers";
 const DESC = "Drop a .svelte file in a Hono Worker. Real SSR, real hydration, no SvelteKit.";
 
 const meta = (path: string, titleSuffix: string) => `
@@ -25,8 +25,8 @@ const meta = (path: string, titleSuffix: string) => `
 <meta property="og:title" content="${titleSuffix ? titleSuffix + " — " + SITE : SITE}">
 <meta property="og:description" content="${DESC}">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://hono-svelte.coey.dev${path}">
-<meta property="og:image" content="https://hono-svelte.coey.dev/og.png">
+<meta property="og:url" content="https://svelte-hono.coey.dev${path}">
+<meta property="og:image" content="https://svelte-hono.coey.dev/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@acoyfellow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E🔥%3C/text%3E%3C/svg%3E">
@@ -79,10 +79,10 @@ app.get("/og.png", async (c) => {
   <rect width="1200" height="630" fill="#fafaf7"/>
   <rect y="610" width="1200" height="20" fill="#ff5a1f"/>
   <text x="80" y="180" font-family="ui-monospace, monospace" font-size="42" fill="#5a5a5a">v0.0.1</text>
-  <text x="80" y="290" font-family="ui-sans-serif, system-ui" font-size="84" font-weight="700" fill="#1a1a1a" letter-spacing="-3">hono-svelte</text>
+  <text x="80" y="290" font-family="ui-sans-serif, system-ui" font-size="84" font-weight="700" fill="#1a1a1a" letter-spacing="-3">svelte-hono</text>
   <text x="80" y="380" font-family="ui-sans-serif, system-ui" font-size="36" fill="#1a1a1a">Svelte 5 on Hono Workers.</text>
   <text x="80" y="430" font-family="ui-sans-serif, system-ui" font-size="36" fill="#5a5a5a">Real SSR. Real hydration. No SvelteKit.</text>
-  <text x="80" y="540" font-family="ui-monospace, monospace" font-size="24" fill="#5a5a5a">hono-svelte.coey.dev</text>
+  <text x="80" y="540" font-family="ui-monospace, monospace" font-size="24" fill="#5a5a5a">svelte-hono.coey.dev</text>
 </svg>`;
   const response = new Response(svg, {
     headers: {
@@ -94,13 +94,13 @@ app.get("/og.png", async (c) => {
   return response;
 });
 
-app.get("/robots.txt", (c) => c.text("User-agent: *\nAllow: /\nSitemap: https://hono-svelte.coey.dev/sitemap.xml\n"));
+app.get("/robots.txt", (c) => c.text("User-agent: *\nAllow: /\nSitemap: https://svelte-hono.coey.dev/sitemap.xml\n"));
 
 app.get("/sitemap.xml", (c) => {
   const urls = ["/", "/start", "/docs", "/why", "/examples"];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `  <url><loc>https://hono-svelte.coey.dev${u}</loc></url>`).join("\n")}
+${urls.map(u => `  <url><loc>https://svelte-hono.coey.dev${u}</loc></url>`).join("\n")}
 </urlset>`;
   return new Response(xml, { headers: { "content-type": "application/xml; charset=utf-8" } });
 });

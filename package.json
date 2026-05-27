@@ -1,6 +1,6 @@
 {
-  "name": "hono-svelte",
-  "version": "0.0.2",
+  "name": "svelte-hono",
+  "version": "0.0.1",
   "type": "module",
   "description": "Svelte 5 SSR + hydration inside a Hono Worker. No SvelteKit.",
   "main": "./dist/index.js",
@@ -58,12 +58,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/acoyfellow/hono-svelte.git"
+    "url": "git+https://github.com/acoyfellow/svelte-hono.git"
   },
   "bugs": {
-    "url": "https://github.com/acoyfellow/hono-svelte/issues"
+    "url": "https://github.com/acoyfellow/svelte-hono/issues"
   },
-  "homepage": "https://hono-svelte.coey.dev",
+  "homepage": "https://svelte-hono.coey.dev",
   "author": "Jordan Coeyman <jcoeyman@cloudflare.com> (https://coey.dev)",
   "license": "MIT"
 }

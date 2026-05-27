@@ -1,4 +1,4 @@
-// hono-svelte/build — the build helper.
+// svelte-hono/build — the build helper.
 //
 // Replaces the boilerplate "two-esbuild-passes" build.mjs every consumer
 // would otherwise write. Pass it a list of Svelte components + a worker
@@ -7,7 +7,7 @@
 //
 // Usage (in your project's build.mjs):
 //
-//   import { buildHonoSvelte } from "hono-svelte/build";
+//   import { buildHonoSvelte } from "svelte-hono/build";
 //
 //   await buildHonoSvelte({
 //     workerEntry: "./worker.ts",
@@ -20,8 +20,8 @@
 //
 // Then in worker.ts:
 //
-//   declare const __HONO_SVELTE_BUNDLES__: Record<string, { js: string; css: string }>;
-//   attachSvelteRoutes(app, { bundles: __HONO_SVELTE_BUNDLES__ });
+//   declare const __SVELTE_HONO_BUNDLES__: Record<string, { js: string; css: string }>;
+//   attachSvelteRoutes(app, { bundles: __SVELTE_HONO_BUNDLES__ });
 //
 // The bundles object is injected via esbuild `define` at build time.
 
@@ -78,7 +78,7 @@ export async function buildHonoSvelte(
 import { hydrate as _hydrate } from "svelte";
 export function hydrate(props) {
   return _hydrate(Component, {
-    target: document.getElementById("hono-svelte-root"),
+    target: document.getElementById("svelte-hono-root"),
     props,
   });
 }
@@ -120,7 +120,7 @@ export function hydrate(props) {
     sourcemap: dev,
     plugins: [sveltePluginServer],
     define: {
-      __HONO_SVELTE_BUNDLES__: JSON.stringify(bundles),
+      __SVELTE_HONO_BUNDLES__: JSON.stringify(bundles),
     },
     external: ["cloudflare:workers"],
     logLevel: "silent",

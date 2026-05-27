@@ -5,17 +5,17 @@ import { svelteRenderer, attachSvelteRoutes } from "../../dist/index.js";
 import Hello from "./hello.svelte";
 
 // Injected by buildHonoSvelte via esbuild `define`.
-declare const __HONO_SVELTE_BUNDLES__: Record<string, { js: string; css: string }>;
+declare const __SVELTE_HONO_BUNDLES__: Record<string, { js: string; css: string }>;
 
 const app = new Hono();
 
-attachSvelteRoutes(app, { bundles: __HONO_SVELTE_BUNDLES__ });
+attachSvelteRoutes(app, { bundles: __SVELTE_HONO_BUNDLES__ });
 
 app.get(
   "/",
   svelteRenderer(Hello, {
     hydrateAs: "hello",
-    title: "hono-svelte hello",
+    title: "svelte-hono hello",
     props: { initialCount: 0 },
   }),
 );

@@ -7,7 +7,7 @@
 <Layout {path}>
   {#snippet body()}
     <h1>5-minute quickstart</h1>
-    <p class="muted">Set up a Hono Worker that renders Svelte 5 components. The repo lives at <a href="https://github.com/acoyfellow/hono-svelte">acoyfellow/hono-svelte</a>.</p>
+    <p class="muted">Set up a Hono Worker that renders Svelte 5 components. The repo lives at <a href="https://github.com/acoyfellow/svelte-hono">acoyfellow/svelte-hono</a>.</p>
 
     <h2>1. Install</h2>
     {@html snippets.startInstall}

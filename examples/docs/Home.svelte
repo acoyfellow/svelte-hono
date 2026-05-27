@@ -14,7 +14,7 @@
       </p>
       <div class="cta">
         <a class="primary" href="/start">5-min quickstart →</a>
-        <a class="secondary" href="https://deploy.workers.cloudflare.com/?url=https://github.com/acoyfellow/hono-svelte" rel="noopener">Deploy the demo</a>
+        <a class="secondary" href="https://deploy.workers.cloudflare.com/?url=https://github.com/acoyfellow/svelte-hono" rel="noopener">Deploy the demo</a>
       </div>
     </section>
 
@@ -22,7 +22,7 @@
 
     {@html snippets.homeWorker}
 
-    <p>This page is the receipt — you're reading it. The site you're on is built with hono-svelte. <a href="/why">Why this exists →</a></p>
+    <p>This page is the receipt — you're reading it. The site you're on is built with svelte-hono. <a href="/why">Why this exists →</a></p>
 
     <h2>What you get</h2>
     <ul>

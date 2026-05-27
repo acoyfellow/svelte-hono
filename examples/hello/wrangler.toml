@@ -1,4 +1,4 @@
-name = "hono-svelte-hello"
+name = "svelte-hono-hello"
 main = "build/worker.bundled.mjs"
 compatibility_date = "2026-04-21"
 compatibility_flags = ["nodejs_compat"]

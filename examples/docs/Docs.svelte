@@ -37,7 +37,7 @@
     </table>
 
     <h2>buildHonoSvelte(options)</h2>
-    <p>From <code>hono-svelte/build</code>. Two esbuild passes — client + server — emitting a single bundled worker with all client bundles inlined as build-time string constants.</p>
+    <p>From <code>svelte-hono/build</code>. Two esbuild passes — client + server — emitting a single bundled worker with all client bundles inlined as build-time string constants.</p>
 
     <table>
       <thead><tr><th>Option</th><th>Type</th><th>Notes</th></tr></thead>
@@ -58,7 +58,7 @@
     <h2>Constraints</h2>
     <ul>
       <li><strong>Build-time compile.</strong> No <code>eval</code> at runtime — Workers prohibits it. See <a href="/why">Why</a>.</li>
-      <li><strong>One root per page.</strong> SSR mount target is <code>#hono-svelte-root</code>.</li>
+      <li><strong>One root per page.</strong> SSR mount target is <code>#svelte-hono-root</code>.</li>
       <li><strong>Non-streaming HTML.</strong> Full document in one Response. Workers fan out at the edge; streaming is rarely the right primitive at this size.</li>
       <li><strong>Hono owns routing.</strong> No file-system router, no <code>load</code> functions, no <code>+layout.svelte</code>. Use Hono. That's the point.</li>
     </ul>

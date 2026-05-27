@@ -1,4 +1,4 @@
-// hono-svelte: render Svelte 5 components inside a Hono Worker.
+// svelte-hono: render Svelte 5 components inside a Hono Worker.
 //
 // Pattern modeled on Hono's own helpers (`jsxRenderer`, `serveStatic`,
 // `logger`): a small factory that returns a `MiddlewareHandler`. Svelte
@@ -9,7 +9,7 @@
 // Usage:
 //
 //   import { Hono } from "hono";
-//   import { svelteRenderer, attachSvelteRoutes } from "hono-svelte";
+//   import { svelteRenderer, attachSvelteRoutes } from "svelte-hono";
 //   import Hello from "./hello.svelte";
 //   import HelloClient from "./hello.svelte?client";
 //
@@ -153,7 +153,7 @@ ${extraHead}
 ${rendered.head}
 </head>
 <body${bodyClass}>
-<div id="hono-svelte-root">${rendered.body}</div>
+<div id="svelte-hono-root">${rendered.body}</div>
 <script type="module">
 import { hydrate } from "${mountPrefix}/${bundleId}.js";
 hydrate(${propsJson});

@@ -6,13 +6,13 @@ export const snippets = {
   homeWorker: {
     lang: "ts",
     code: `import { Hono } from "hono";
-import { svelteRenderer, attachSvelteRoutes } from "hono-svelte";
+import { svelteRenderer, attachSvelteRoutes } from "svelte-hono";
 import Hello from "./hello.svelte";
 
-declare const __HONO_SVELTE_BUNDLES__: Record<string, { js: string; css: string }>;
+declare const __SVELTE_HONO_BUNDLES__: Record<string, { js: string; css: string }>;
 
 const app = new Hono();
-attachSvelteRoutes(app, { bundles: __HONO_SVELTE_BUNDLES__ });
+attachSvelteRoutes(app, { bundles: __SVELTE_HONO_BUNDLES__ });
 
 app.get(
   "/",
@@ -28,7 +28,7 @@ export default app;`,
 
   startInstall: {
     lang: "bash",
-    code: `npm i hono-svelte hono svelte
+    code: `npm i svelte-hono hono svelte
 npm i -D esbuild esbuild-svelte wrangler`,
   },
 
@@ -46,13 +46,13 @@ npm i -D esbuild esbuild-svelte wrangler`,
   startWorker: {
     lang: "ts",
     code: `import { Hono } from "hono";
-import { svelteRenderer, attachSvelteRoutes } from "hono-svelte";
+import { svelteRenderer, attachSvelteRoutes } from "svelte-hono";
 import Hello from "./hello.svelte";
 
-declare const __HONO_SVELTE_BUNDLES__: Record<string, { js: string; css: string }>;
+declare const __SVELTE_HONO_BUNDLES__: Record<string, { js: string; css: string }>;
 
 const app = new Hono();
-attachSvelteRoutes(app, { bundles: __HONO_SVELTE_BUNDLES__ });
+attachSvelteRoutes(app, { bundles: __SVELTE_HONO_BUNDLES__ });
 
 app.get("/", svelteRenderer(Hello, { hydrateAs: "hello", title: "Hello" }));
 
@@ -61,7 +61,7 @@ export default app;`,
 
   startBuild: {
     lang: "ts",
-    code: `import { buildHonoSvelte } from "hono-svelte/build";
+    code: `import { buildHonoSvelte } from "svelte-hono/build";
 
 await buildHonoSvelte({
   workerEntry: "./worker.ts",
@@ -89,7 +89,7 @@ command = "node build.mjs"`,
 
   docsBundlesDecl: {
     lang: "ts",
-    code: `declare const __HONO_SVELTE_BUNDLES__: Record<string, { js: string; css: string }>;`,
+    code: `declare const __SVELTE_HONO_BUNDLES__: Record<string, { js: string; css: string }>;`,
   },
 
   whyError: {

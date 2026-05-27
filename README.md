@@ -1,19 +1,19 @@
-# hono-svelte
+# svelte-hono
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/acoyfellow/hono-svelte)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/acoyfellow/svelte-hono)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Drop a `.svelte` file in a Hono Worker. Real SSR. Real hydration. No SvelteKit.
 
 ```ts
 import { Hono } from "hono";
-import { svelteRenderer, attachSvelteRoutes } from "hono-svelte";
+import { svelteRenderer, attachSvelteRoutes } from "svelte-hono";
 import Hello from "./hello.svelte";
 
-declare const __HONO_SVELTE_BUNDLES__: Record<string, { js: string; css: string }>;
+declare const __SVELTE_HONO_BUNDLES__: Record<string, { js: string; css: string }>;
 
 const app = new Hono();
-attachSvelteRoutes(app, { bundles: __HONO_SVELTE_BUNDLES__ });
+attachSvelteRoutes(app, { bundles: __SVELTE_HONO_BUNDLES__ });
 
 app.get("/", svelteRenderer(Hello, {
   hydrateAs: "hello",
@@ -24,7 +24,7 @@ app.get("/", svelteRenderer(Hello, {
 export default app;
 ```
 
-That's it. Live docs: **<https://hono-svelte.coey.dev>**.
+That's it. Live docs: **<https://svelte-hono.coey.dev>**.
 
 ## What it does
 
@@ -36,12 +36,12 @@ That's it. Live docs: **<https://hono-svelte.coey.dev>**.
 
 ## Why this exists
 
-Cloudflare Workers disable `eval` and `new Function`. That kills the popular "compile Svelte source at the edge" pattern (search "Code generation from strings disallowed"). This adapter takes the other path: compile at build time, evaluate at request time as a normal ES module. The full story: <https://hono-svelte.coey.dev/why>
+Cloudflare Workers disable `eval` and `new Function`. That kills the popular "compile Svelte source at the edge" pattern (search "Code generation from strings disallowed"). This adapter takes the other path: compile at build time, evaluate at request time as a normal ES module. The full story: <https://svelte-hono.coey.dev/why>
 
 ## Install
 
 ```bash
-npm i hono-svelte hono svelte
+npm i svelte-hono hono svelte
 npm i -D esbuild esbuild-svelte wrangler
 ```
 
@@ -63,7 +63,7 @@ npm i -D esbuild esbuild-svelte wrangler
 3. **A build script** — `build.mjs`:
 
    ```ts
-   import { buildHonoSvelte } from "hono-svelte/build";
+   import { buildHonoSvelte } from "svelte-hono/build";
 
    await buildHonoSvelte({
      workerEntry: "./worker.ts",
@@ -95,8 +95,8 @@ npm i -D esbuild esbuild-svelte wrangler
 ## Examples in this repo
 
 ```bash
-git clone https://github.com/acoyfellow/hono-svelte
-cd hono-svelte
+git clone https://github.com/acoyfellow/svelte-hono
+cd svelte-hono
 npm install && npm run build
 
 # minimal counter
@@ -106,11 +106,11 @@ cd examples/hello && node build.mjs && npx wrangler dev
 cd examples/docs && node build.mjs && npx wrangler dev
 ```
 
-The `examples/docs/` site is the live docs at hono-svelte.coey.dev. The site is built with hono-svelte itself — the same primitive you're reading about.
+The `examples/docs/` site is the live docs at svelte-hono.coey.dev. The site is built with svelte-hono itself — the same primitive you're reading about.
 
 ## Comparison
 
-|  | hono-svelte | SvelteKit + adapter-cloudflare | hono/jsx |
+|  | svelte-hono | SvelteKit + adapter-cloudflare | hono/jsx |
 |---|---|---|---|
 | Routing | Hono | SvelteKit's filesystem | Hono |
 | Build | One `node build.mjs` | Vite + adapter | None |

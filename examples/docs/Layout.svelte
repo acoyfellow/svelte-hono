@@ -1,5 +1,5 @@
 <script>
-  let { title = "hono-svelte", path = "/", body } = $props();
+  let { title = "svelte-hono", path = "/", body } = $props();
 
   const nav = [
     { href: "/", label: "Home" },
@@ -11,12 +11,12 @@
 </script>
 
 <header>
-  <a href="/" class="brand">hono-svelte</a>
+  <a href="/" class="brand">svelte-hono</a>
   <nav>
     {#each nav as link}
       <a href={link.href} class:active={path === link.href}>{link.label}</a>
     {/each}
-    <a class="external" href="https://github.com/acoyfellow/hono-svelte" rel="noopener">GitHub →</a>
+    <a class="external" href="https://github.com/acoyfellow/svelte-hono" rel="noopener">GitHub →</a>
   </nav>
 </header>
 
@@ -25,7 +25,7 @@
 </main>
 
 <footer>
-  <span>v0.0.1 · <a href="https://github.com/acoyfellow/hono-svelte/blob/main/LICENSE">MIT</a></span>
+  <span>v0.0.1 · <a href="https://github.com/acoyfellow/svelte-hono/blob/main/LICENSE">MIT</a></span>
   <span class="dim">made for fun by <a href="https://coey.dev" rel="noopener">@acoyfellow</a></span>
 </footer>
 

@@ -10,7 +10,7 @@
 </script>
 
 <main>
-  <h1>hono-svelte demo</h1>
+  <h1>svelte-hono demo</h1>
   <p>Server-rendered, then hydrated. Click increments client-side.</p>
   <button onclick={() => count += 1}>clicks: {count}</button>
   <button onclick={greet}>say hi</button>
