@@ -54,7 +54,10 @@ function contentHash(...parts: string[]): string {
 }
 
 export interface BuildHonoSvelteOptions {
-  /** Path to the Worker entry (TS or JS). */
+  /** Path to the Worker entry (TS or JS). When `skipWorkerBundle` is true,
+   *  this still needs to resolve to a directory — it's used as the base
+   *  for resolving relative component paths and for writing the generated
+   *  bundles module. */
   workerEntry: string;
   /** Output directory; will hold `worker.bundled.mjs` + intermediates. */
   outDir: string;
@@ -70,6 +73,15 @@ export interface BuildHonoSvelteOptions {
    * this path (without extension) in their worker.
    */
   bundlesFile?: string;
+  /**
+   * Skip the worker-bundle step. Use when your Worker is built by another
+   * tool (e.g. wrangler's built-in esbuild). The helper then only emits the
+   * client artifacts (per-component bundles + _runtime + bundles.generated)
+   * and your tool handles the worker.
+   *
+   * Defaults to `false` — the worker bundle is produced.
+   */
+  skipWorkerBundle?: boolean;
 }
 
 export interface BuildHonoSvelteResult {
@@ -202,27 +214,41 @@ export function hydrate(props) {
       `export const bundles: Record<string, ClientBundle> = ${JSON.stringify(bundles, null, 2)};\n`,
   );
 
-  // ── 3. Bundle the worker. ───────────────────────────────────────────────
+  // ── 3. Bundle the worker (unless the caller is bundling it themselves). ─
   const workerOutfile = join(outDir, "worker.bundled.mjs");
-  await build({
-    entryPoints: [workerEntry],
-    bundle: true,
-    format: "esm",
-    platform: "neutral",
-    target,
-    outfile: workerOutfile,
-    minify: !dev,
-    sourcemap: dev,
-    plugins: [sveltePluginServer],
-    external: ["cloudflare:workers"],
-    logLevel: "silent",
-  });
-
-  const workerBytes = readFileSync(workerOutfile).byteLength;
+  let workerBytes = 0;
+  if (!options.skipWorkerBundle) {
+    await build({
+      entryPoints: [workerEntry],
+      bundle: true,
+      format: "esm",
+      platform: "neutral",
+      target,
+      outfile: workerOutfile,
+      minify: !dev,
+      sourcemap: dev,
+      plugins: [sveltePluginServer],
+      external: ["cloudflare:workers"],
+      logLevel: "silent",
+    });
+    workerBytes = readFileSync(workerOutfile).byteLength;
+  }
   const bundleSizes: BuildHonoSvelteResult["bundleSizes"] = {};
   for (const [id, b] of Object.entries(bundles)) {
     bundleSizes[id] = { js: b.js.length, css: b.css.length, hash: b.hash };
   }
 
   return { workerOutfile, bundleSizes, workerBytes, bundlesFile: bundlesFilePath };
+}
+
+export async function buildHonoSvelteClientArtifacts(
+  options: Omit<BuildHonoSvelteOptions, "skipWorkerBundle" | "workerEntry"> & {
+    /** Used as the base for resolving relative component paths and the
+     *  bundles.generated.ts output location. Pass any file in the project,
+     *  typically your worker entry. */
+    workerEntry: string;
+  },
+): Promise<Omit<BuildHonoSvelteResult, "workerOutfile" | "workerBytes">> {
+  const r = await buildHonoSvelte({ ...options, skipWorkerBundle: true });
+  return { bundleSizes: r.bundleSizes, bundlesFile: r.bundlesFile };
 }
