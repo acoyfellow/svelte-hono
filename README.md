@@ -35,7 +35,7 @@ That's the whole worker. `bundles.generated.ts` is written for you by `svelte-ho
 - Compiles your `.svelte` files at build time (esbuild + esbuild-svelte).
 - Server-renders Svelte 5 components on the Worker — real HTML, instant first paint.
 - Hydrates on the client — `$state`, `$effect`, event handlers, all of it.
-- Edge-caches both HTML and client bundles via `caches.default`.
+- Static bundles cache for a year on Cloudflare's edge (immutable per build). HTML defaults to revalidate-on-every-request so deploys are visible immediately; opt into edge HTML caching via `cacheControl`.
 - Stays out of your way. Hono owns routing. You own the rest.
 - No `eval`, no `new Function`, no Workers codegen prohibition to dodge.
 

@@ -43,6 +43,11 @@
       <li>Hono's router on top.</li>
     </ul>
 
+    <h2>Cache defaults</h2>
+    <p>HTML responses ship with <code>Cache-Control: public, max-age=0, must-revalidate</code>. Browsers store the response but always revalidate before using it; Cloudflare's edge does not cache HTML. <strong>Deploys are visible immediately, everywhere.</strong></p>
+    <p>Static bundles at <code>/__svelte/*.js</code> and <code>*.css</code> are immutable per build and cache for a year via the standard <code>caches.default</code> Cloudflare edge cache.</p>
+    <p>If you want edge caching of HTML, opt in by passing <code>cacheControl: "public, max-age=60, s-maxage=300"</code> (or whatever you want) to <code>svelteRenderer</code>. Caching HTML is rarely worth it — SSR is fast, and the staleness cost on deploy is real. We default to correct, not fast.</p>
+
     <h2>Why not SvelteKit?</h2>
     <p>SvelteKit is a full framework — file-system router, layouts, <code>load</code> functions, an opinionated build, a Vite-based pipeline, an adapter per host. If you want all that, use it. <code>@sveltejs/adapter-cloudflare</code> is great.</p>
     <p>This is for a different shape: <em>"I'm already building a Hono Worker. I want components."</em></p>

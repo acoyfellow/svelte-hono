@@ -44,9 +44,19 @@ export interface SvelteRendererOptions {
   bodyClass?: string;
   /**
    * Cache-Control header for the SSR'd HTML response.
-   * Defaults to `"public, max-age=60, s-maxage=86400"` — browser revalidates
-   * after a minute, Cloudflare's edge keeps for a day. Pass `false` to send
-   * no Cache-Control (use only if the response varies per user).
+   *
+   * Default: `"public, max-age=0, must-revalidate"` — deploy-safe.
+   * Browsers store the response but always revalidate before using it, and
+   * Cloudflare's edge does not cache it. New deploys are visible on the
+   * next request, everywhere.
+   *
+   * Override examples:
+   *   - `"public, max-age=60, s-maxage=300"` — dedupe spikes by ~5min.
+   *   - `"private, max-age=0"` — per-user responses, no shared caching.
+   *   - `false` — omit the Cache-Control header entirely.
+   *
+   * SSR is fast (<5ms typical). Caching the HTML buys little speed but
+   * costs staleness on deploy. If you want edge caching, opt in.
    */
   cacheControl?: string | false;
 }
@@ -176,30 +186,23 @@ export function svelteRenderer<Props extends Record<string, unknown> = Record<st
   options: SvelteRendererOptions,
 ): MiddlewareHandler {
   return async (c) => {
-    // Edge cache: only safe for GETs on URLs that don't vary per user.
-    // Caching is keyed by the full request including cookies/headers via
-    // the Cache API, so authenticated traffic doesn't collide with public.
-    const cache = (globalThis as unknown as { caches?: { default: Cache } }).caches?.default;
-    const cacheable = c.req.method === "GET" && options.cacheControl !== false;
-    if (cacheable && cache) {
-      const hit = await cache.match(c.req.raw);
-      if (hit) return hit;
-    }
-
+    // HTML is intentionally NOT written to caches.default by default. Deploys
+    // need to be visible immediately. Cache-Control: max-age=0, must-revalidate
+    // means browsers store the response but always revalidate before using it,
+    // and Cloudflare's edge does not cache it.
+    //
+    // Users who explicitly opt into edge caching by passing a non-default
+    // `cacheControl` with `s-maxage=...` get Cloudflare-level caching for free
+    // via the response header alone — no Cache API write needed.
     const props = (options.props ?? {}) as Props;
     const out = svelteRender(component as never, { props: props as never });
     const html = shell({ body: out.body, head: out.head }, options.hydrateAs, true, options);
 
-    const cc = options.cacheControl ?? "public, max-age=60, s-maxage=86400";
+    const cc = options.cacheControl ?? "public, max-age=0, must-revalidate";
     const headers: Record<string, string> = {
       "content-type": "text/html; charset=utf-8",
     };
     if (cc) headers["cache-control"] = cc;
-    const response = new Response(html, { status: 200, headers });
-
-    if (cacheable && cache && cc) {
-      c.executionCtx.waitUntil(cache.put(c.req.raw, response.clone()));
-    }
-    return response;
+    return new Response(html, { status: 200, headers });
   };
 }
