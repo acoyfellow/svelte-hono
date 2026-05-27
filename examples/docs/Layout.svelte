@@ -27,7 +27,7 @@
 
 <footer>
   <span>v0.0.1 · <a href="https://www.npmjs.com/package/svelte-hono">npm</a> · <a href="https://github.com/acoyfellow/svelte-hono">GitHub</a> · <a href="https://github.com/acoyfellow/svelte-hono/blob/main/LICENSE">MIT</a></span>
-  <span class="dim">hello (new) world · <a href="https://coey.dev" rel="noopener">@acoyfellow</a></span>
+  <span class="dim">made by <a href="https://coey.dev" rel="noopener">@acoyfellow</a></span>
 </footer>
 
 <style>

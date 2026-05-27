@@ -1,7 +1,5 @@
 # svelte-hono
 
-> `hello (new) world`
-
 [![npm version](https://img.shields.io/npm/v/svelte-hono.svg)](https://www.npmjs.com/package/svelte-hono)
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/acoyfellow/svelte-hono)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
