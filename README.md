@@ -150,7 +150,7 @@ If you upgrade from a pre-hash version of svelte-hono, the legacy unhashed URL (
 
 ## Status
 
-v0.0.1. Done. The version doesn't increment. Two exports, one build helper, edge-cached. The docs site is the receipt.
+Shipping. Three exports, one build helper, content-hashed and edge-cached. The docs site is the receipt. See [CHANGELOG / npm](https://www.npmjs.com/package/svelte-hono) for the latest version.
 
 ## License
 

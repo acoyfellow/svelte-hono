@@ -7,6 +7,7 @@ examples/*/build/
 X-POST-DRAFT.md
 .npmrc
 examples/docs/snippets.generated.js
+examples/docs/version.generated.js
 examples/*/bundles.generated.ts
 probe-*.mjs
 *.tgz

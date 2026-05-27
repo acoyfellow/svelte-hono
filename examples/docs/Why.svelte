@@ -32,7 +32,7 @@
     <h2>What you lose</h2>
     <ul>
       <li>You can't accept Svelte source as a string at runtime. The source must be a real <code>.svelte</code> file the build sees.</li>
-      <li>The bundle ships pre-compiled Svelte runtime. ~45 KB minified for a simple component.</li>
+      <li>The first page in a session pays for Svelte's client runtime — a shared ~103 KB <code>_runtime.&lt;hash&gt;.js</code> chunk, cached forever after that. Per-component bundles on top are typically 1–16 KB.</li>
     </ul>
 
     <h2>What you keep</h2>
@@ -43,10 +43,18 @@
       <li>Hono's router on top.</li>
     </ul>
 
-    <h2>Cache defaults</h2>
-    <p>HTML responses ship with <code>Cache-Control: public, max-age=0, must-revalidate</code>. Browsers store the response but always revalidate before using it; Cloudflare's edge does not cache HTML. <strong>Deploys are visible immediately, everywhere.</strong></p>
-    <p>Static bundles at <code>/__svelte/*.js</code> and <code>*.css</code> are immutable per build and cache for a year via the standard <code>caches.default</code> Cloudflare edge cache.</p>
-    <p>If you want edge caching of HTML, opt in by passing <code>cacheControl: "public, max-age=60, s-maxage=300"</code> (or whatever you want) to <code>svelteRenderer</code>. Caching HTML is rarely worth it — SSR is fast, and the staleness cost on deploy is real. We default to correct, not fast.</p>
+    <h2 id="caching">Cache defaults</h2>
+    <p>The whole reason a hydration script under a stable URL is dangerous is that browsers and Cloudflare's edge will happily serve the old bytes after you deploy. svelte-hono sidesteps that by content-hashing every client bundle: <code>/__svelte/&lt;id&gt;.&lt;hash&gt;.js</code>. New build → new hash → new URL → guaranteed cache miss.</p>
+    <table>
+      <thead><tr><th>URL</th><th>Cache-Control</th><th>Who serves it</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET /</code> (HTML)</td><td><code>public, max-age=0, must-revalidate</code> (default)</td><td>Worker, every request</td></tr>
+        <tr><td><code>GET /__svelte/&#123;id&#125;.&#123;hash&#125;.js</code></td><td><code>public, max-age=31536000, immutable</code></td><td>Cloudflare edge cache, indefinitely</td></tr>
+        <tr><td><code>GET /__svelte/_runtime.&#123;hash&#125;.js</code></td><td><code>public, max-age=31536000, immutable</code></td><td>Cloudflare edge cache, indefinitely</td></tr>
+      </tbody>
+    </table>
+    <p>HTML revalidates on every request, so <strong>deploys are visible immediately, everywhere</strong>. Hashed asset URLs in that HTML mean the browser fetches fresh JS automatically — no manual cache purging, ever. If a request comes in for a stale hash that no longer matches the current bundle, the Worker returns 404 instead of silently serving the wrong bytes.</p>
+    <p>Opt into edge HTML caching by passing <code>cacheControl: "public, max-age=60, s-maxage=300"</code> (or whatever) to <code>svelteRenderer</code>. Hashed asset URLs make even cached HTML safe — it'll request the right JS as long as the HTML itself is still valid.</p>
 
     <h2>Why not SvelteKit?</h2>
     <p>SvelteKit is a full framework — file-system router, layouts, <code>load</code> functions, an opinionated build, a Vite-based pipeline, an adapter per host. If you want all that, use it. <code>@sveltejs/adapter-cloudflare</code> is great.</p>

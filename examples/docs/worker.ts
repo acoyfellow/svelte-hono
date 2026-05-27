@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { svelteRenderer, attachSvelteRoutes } from "../../dist/index.js";
 import { bundles } from "./bundles.generated.js";
+// @ts-expect-error -- generated at build time
+import { version as SVELTE_HONO_VERSION } from "./version.generated.js";
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-expect-error -- esbuild-svelte emits a Svelte component module.
 import Home from "./Home.svelte";
@@ -77,7 +79,7 @@ app.get("/og.png", async (c) => {
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <rect width="1200" height="630" fill="#fafaf7"/>
   <rect y="610" width="1200" height="20" fill="#ff5a1f"/>
-  <text x="80" y="180" font-family="ui-monospace, monospace" font-size="42" fill="#5a5a5a">v0.0.1</text>
+  <text x="80" y="180" font-family="ui-monospace, monospace" font-size="42" fill="#5a5a5a">v${SVELTE_HONO_VERSION}</text>
   <text x="80" y="290" font-family="ui-sans-serif, system-ui" font-size="84" font-weight="700" fill="#1a1a1a" letter-spacing="-3">svelte-hono</text>
   <text x="80" y="380" font-family="ui-sans-serif, system-ui" font-size="36" fill="#1a1a1a">Svelte 5 on Hono Workers.</text>
   <text x="80" y="430" font-family="ui-sans-serif, system-ui" font-size="36" fill="#5a5a5a">Real SSR. Real hydration. No SvelteKit.</text>
